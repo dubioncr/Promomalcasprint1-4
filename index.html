@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      body { margin: 0; overflow: hidden; font-family: sans-serif; }
+
+      /* Contenedor del mensaje */
+      #scanning-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999; /* Por encima de todo */
+        background: rgba(0, 0, 0, 0.2); /* Fondo muy sutil */
+        pointer-events: none;
+      }
+
+      /* Estilo del recuadro de mensaje */
+      .scan-message {
+        background: rgba(0, 0, 0, 0.7);
+        color: #D4AF37; /* Dorado */
+        padding: 20px 40px;
+        border-radius: 50px;
+        border: 2px solid #D4AF37;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        animation: pulse 2s infinite; /* Animación de parpadeo */
+      }
+
+      @keyframes pulse {
+        0% { opacity: 0.6; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+        100% { opacity: 0.6; transform: scale(1); }
+      }
+
+      /* Clase para ocultar el mensaje con suavidad */
+      .hidden {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="scanning-overlay">
+      <div class="scan-message">Escanea la tarjeta</div>
+    </div>
+
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+    
+      <a-assets>
+        <a-asset-item id="miModelo" src="./cuadromalcasprint1.glb"></a-asset-item>
+      </a-assets>
+
+      <a-ligth type="ambient" color="#ffffff" 
+    intensity="2"></a-ligth>
+
+      <a-ligth type="directional" position="2 2 2" 
+    intensity="2" target="#target0"></a-ligth>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="target0" mindar-image-target="targetIndex: 0">
+        <a-gltf-model 
+          src="#miModelo" 
+          rotation="0 0 0" 
+          position="0 0 0.1" 
+          scale="0.2 0.2 0.2"
+          animation="property: rotation; from: 0 0 0; to: 0 0 1440; loop: true; dur: 5000; easing: easeInOutQuad">
+        </a-gltf-model>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+      // Referencias a los elementos
+      const overlay = document.getElementById('scanning-overlay');
+      const targetEntity = document.getElementById('target0');
+
+      // Detectar cuando la cámara encuentra la imagen
+      targetEntity.addEventListener("targetFound", () => {
+        console.log("Tarjeta detectada");
+        overlay.classList.add("hidden");
+      });
+
+      // Detectar cuando la cámara pierde la imagen
+      targetEntity.addEventListener("targetLost", () => {
+        console.log("Tarjeta perdida");
+        overlay.classList.remove("hidden");
+      });
+    </script>
+  </body>
+</html>
